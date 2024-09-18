@@ -1,0 +1,72 @@
+import cv2
+import numpy as np
+import face_recognition
+# webcam
+frameWidth = 640
+frameHeight = 480
+cap = cv2.VideoCapture(0)
+cap.set(3, frameWidth)
+cap.set(4, frameHeight)
+cap.set(10,150)
+while True:
+    success,img = cap.read()
+    cv2.putText(img, "press E to detect face ", (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    cv2.imshow("video",img)
+    if cv2.waitKey(1) & 0xFF == ord('e'):
+        break
+
+# step 1 taking images and converting to RGB
+person1_img = face_recognition.load_image_file('images/jhanvi_main.jpg')
+person1_img = cv2.cvtColor(person1_img,cv2.COLOR_BGR2RGB)
+
+person2_img = face_recognition.load_image_file('images/pooja.jpg')
+person2_img = cv2.cvtColor(person2_img,cv2.COLOR_BGR2RGB)
+
+sample_img = face_recognition.load_image_file('images/jhanvi_test.jpg')
+sample_img = cv2.cvtColor(sample_img,cv2.COLOR_BGR2RGB)
+
+resize1 = cv2.resize(person1_img,(300,300))
+resize2 = cv2.resize(person2_img,(300,300))
+resize3 = cv2.resize(sample_img,(300,300))
+resize4 = cv2.resize(img,(300,300))
+
+
+
+# step2 face detection
+locate_person1 = face_recognition.face_locations(resize1)[0]
+# step 2encoding the images
+encode_person1 = face_recognition.face_encodings(resize1)[0]
+cv2.rectangle(resize1,(locate_person1[3],locate_person1[0]),(locate_person1[1],locate_person1[2]),(0,0,0),3)
+
+locate_person2 = face_recognition.face_locations(resize2)[0]
+encode_person2 = face_recognition.face_encodings(resize2)[0]
+cv2.rectangle(resize2,(locate_person2[3],locate_person2[0]),(locate_person2[1],locate_person2[2]),(255,0,0),2)
+
+locate_sample = face_recognition.face_locations(resize3)[0]
+encode_sample = face_recognition.face_encodings(resize3)[0]
+cv2.rectangle(resize3,(locate_sample[3],locate_sample[0]),(locate_sample[1],locate_sample[2]),(255,0,0),2)
+
+locate_video = face_recognition.face_locations(resize4)[0]
+encode_video = face_recognition.face_encodings(resize4)[0]
+cv2.rectangle(resize4,(locate_video[3],locate_video[0]),(locate_video[1],locate_video[2]),(255,0,0),2)
+
+
+# step 3 comparing the encodings
+final = face_recognition.compare_faces([encode_person1],encode_sample)
+# to find the best match (similarities) distances
+# lower the distance better the match
+distance = face_recognition.face_distance([encode_person1],encode_sample)
+distance1 = face_recognition.face_distance([encode_person1],encode_person2)
+print(final)
+print(distance,distance1)
+cv2.putText(resize1,"original",(50,100),cv2.FONT_HERSHEY_PLAIN,0.9,(0,0,0),2)
+
+cv2.putText(resize3,f'{final} {round(distance[0],2)}',(50,100),cv2.FONT_HERSHEY_PLAIN,0.9,(0,0,0),2)
+cv2.putText(resize2,f' {round(distance1[0],2)}',(50,100),cv2.FONT_HERSHEY_PLAIN,0.9,(0,0,0),2)
+
+cv2.imshow("person1",resize1)
+cv2.imshow("person2",resize2)
+cv2.imshow("sample",resize3)
+cv2.imshow("your face",resize4)
+
+cv2.waitKey(0)
